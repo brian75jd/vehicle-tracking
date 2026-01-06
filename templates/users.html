@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% include "navbar.html" %}
+{% load static %}
+
+{% block extra %}
+<link rel="stylesheet" href="{% static "css/product.css" %}">
+{% endblock extra %}
+
+      <html>
+      {% block content %}
+      <br>
+      <br>
+      <center>
+{% for info in info  %}
+      <div class="card mb-3" style="max-width: 640px;">
+        <div class="row g-0">
+          <div class="col-md-4">
+            <!-- <img src="{{product.image.url}}" class="img-fluid rounded-start" alt="..."> -->
+          </div>
+          <div class="col-md-8">
+            <div class="card-body">
+                <center>
+              <h5 class="card-title">{{info.type}}</h5>
+              <p class="card-text">$ {{info.VIN}}</p>
+              <p class="card-text">{{info.owner}}</p>
+             
+              <a class="nav-link active" aria-current="page" href="{% url "system:home" %}"> Contact {{info.latitude}}</a>
+             
+              <button type='button' value='{{info.id}}' class='btn btn-secondary' id="add-cart">Add to cart</button>
+              <button type='button' value='{{info.id}}' class='btn btn-primary' id="add-cart">Visit Shop</button>
+              </center>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {% endfor %}
+      </center>
+      <br><br>
+
+  <script>
+
+    //check if button is clicked
+    $(document).on('click','#add-cart',function(e){
+      e.preventDefault();
+      $.ajax({
+        type:'POST',
+        url:'{% url "cart:add" %}',
+        data: {
+          product_id:$('#add-cart').val(),
+          csrfmiddlewaretoken: '{% csrf_token %}',
+          action:'post'
+        },
+        success:function(json){
+          console.log(json)
+        },
+        error:function(xhr,errmsg,err){}
+
+      });
+
+    })
+
+  
+  </script>
+
+      {% endblock content %}
+      </html>
+

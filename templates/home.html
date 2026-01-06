@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+    {% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrackFlow | Vehicle Tracking System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+            * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #64748b;
+            --accent: #f59e0b;
+            --background: #dfe9f3ff;
+            --card: #1b1c1dff;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+        }
+
+        body {
+            background: linear-gradient(rgba(0,0,0,0.73),rgba(0,0,0,0.73)),url("/static/images/car.png");
+            background-repeat: no-repeat;
+            background-position: center;
+            min-height:100vh;
+            background-size: contain;
+            background-attachment:fixed;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header Styles */
+        header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 1rem 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .loggout{
+            text-decoration:none;
+            color:white;
+        }
+        a{
+            color:white;
+            text-decoration:none;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .logo-icon {
+            background: var(--accent);
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .nav-btn {
+            padding: 0.7rem 1.5rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-btn-primary {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+        }
+
+        .nav-btn-primary:hover {
+            background: #e58e0b;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.6);
+        }
+
+        .nav-btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .nav-btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .notification-bell {
+            position: relative;
+            background: rgba(255, 255, 255, 0.2);
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .notification-bell:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .notification-bell i {
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--error);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        /* Hero Section */
+        .hero {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            padding: 120px 0 80px;
+            color: white;
+        }
+
+        .hero-content {
+            max-width: 600px;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(45deg, #fff, #e2e8f0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-bottom: 2.5rem;
+            color: #e2e8f0;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+        }
+
+        .btn-primary:hover {
+            background: #e58e0b;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(245, 158, 11, 0.6);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-3px);
+        }
+
+        /* Features Section */
+        .features {
+            background: #161124e8;
+            padding: 80px 0;
+            border-radius: 40px 40px 0 0;
+            margin-top: 2rem;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .feature-card {
+            background: var(--background);
+            padding: 2rem;
+            border-radius: 20px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .feature-icon {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        /* Notification Panel */
+        .notification-panel {
+            position: fixed;
+            top: 80px;
+            right: -400px;
+            width: 380px;
+            height: calc(100vh - 100px);
+            background: var(--card);
+            border-radius: 20px 0 0 20px;
+            box-shadow: -5px 0 30px rgba(0, 0, 0, 0.1);
+            transition: right 0.3s ease;
+            z-index: 999;
+            overflow-y: auto;
+        }
+
+        .notification-panel.active {
+            right: 20px;
+        }
+
+        .notification-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: between;
+            align-items: center;
+        }
+
+        .notification-header h3 {
+            color: var(--text);
+            font-size: 1.3rem;
+        }
+
+        .notification-list {
+            padding: 1rem;
+        }
+
+        .notification-item {
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            background: var(--background);
+            border-left: 4px solid var(--primary);
+            animation: slideIn 0.3s ease;
+        }
+
+        .notification-item.alert {
+            border-left-color: var(--error);
+        }
+
+        .notification-item.warning {
+            border-left-color: var(--warning);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Mobile Menu */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background: black;
+                backdrop-filter: blur(10px);
+                flex-direction: column;
+                padding: 1rem;
+                gap: 1rem;
+            }
+            
+            .nav-links.active {
+                display: flex;
+            }
+            
+            .nav-btn {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            .notification-panel {
+                width: 100%;
+                right: -100%;
+                border-radius: 0;
+            }
+            
+            .notification-panel.active {
+                right: 0;
+            }
+        }
+    
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="navbar">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <i class="fas fa-satellite-dish"></i>
+                    </div>
+                    <h3>VTS</h3>
+                </div>
+                
+                <div class="nav-links">
+                    <a href="/map" class="nav-btn nav-btn-primary">
+                        <i class="fas fa-map-marked-alt"></i>
+                        Live Map
+                    </a>
+                    <button class="nav-btn nav-btn-secondary" onclick="showDemoAlert()">
+                        <i class="fas fa-play-circle"></i>
+                        Demo Alert
+                    </button>
+                    <button class="nav-btn nav-btn-secondary">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <a href="{% url "system:logout" %}" class='loggout'>logout</a>
+                    </button>
+                    <div class="notification-bell" id="notificationBell">
+                        <i class="fas fa-bell"></i>
+                        <div class="notification-badge" id="notificationBadge">3</div>
+                    </div>
+                    
+                </div>
+
+                <button class="mobile-menu-btn" id="mobileMenuBtn">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Notification Panel -->
+    <div class="notification-panel" id="notificationPanel">
+        <div class="notification-header">
+            <h3><i class="fas fa-bell"></i> Notifications</h3>
+            
+        </div>
+        <div class="notification-list" id="notificationList">
+            <!-- Notifications will be dynamically added here -->
+        </div>
+              <button onclick="closeNotifications()" style="background: none; border: none; color: var(--text-light); cursor: pointer; margin-left:10px;">
+                <i class="fas fa-times"></i>
+            </button>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Vehicle Tracking & Geofencing System</h1>
+                <p>Monitor your fleet in real-time with intelligent boundary alerts. Get instant notifications when vehicles enter or leave designated areas.</p>
+                <div class="hero-buttons">
+                    <a href="{% url "system:layer" %}" class="btn btn-primary">
+                        <i class="fas fa-play"></i>
+                        3D map
+                    </a>
+                    <a href="{% url "system:info" %}" class="btn btn-secondary">
+                        <i class="fas fa-info-circle"></i>
+                        Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="container">
+            <h2 style="text-align: center; color: white; font-size: 2.5rem; margin-bottom: 1rem;">Powerful Features</h2>
+            <p style="text-align: center; color: var(--text-light); font-size: 1.1rem; max-width: 600px; margin: 0 auto;">Everything you need for modern fleet management</p>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <h3>Real-time Tracking</h3>
+                    <p style="color: var(--text-light); margin-top: 1rem;">Live GPS tracking with updates every 30 seconds</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-draw-polygon"></i>
+                    </div>
+                    <h3>Smart Geofencing</h3>
+                    <p style="color: var(--text-light); margin-top: 1rem;">Create virtual boundaries and get instant alerts</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <h3>Instant Alerts</h3>
+                    <p style="color: var(--text-light); margin-top: 1rem;">Get notified when vehicles cross boundaries</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Notification System
+        const notificationBell = document.getElementById('notificationBell');
+        const notificationPanel = document.getElementById('notificationPanel');
+        const notificationBadge = document.getElementById('notificationBadge');
+        const notificationList = document.getElementById('notificationList');
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const navLinks = document.querySelector('.nav-links');
+
+        let notifications = [
+            {
+                id: 1,
+                type: 'alert',
+                title: 'Boundary Crossed',
+                message: 'Vehicle ABC-123 entered Downtown District',
+                time: '2 minutes ago',
+                icon: 'fas fa-exclamation-triangle'
+            },
+            {
+                id: 2,
+                type: 'warning',
+                title: 'Speed Alert',
+                message: 'Vehicle XYZ-789 exceeding speed limit in school zone',
+                time: '15 minutes ago',
+                icon: 'fas fa-tachometer-alt'
+            },
+            {
+                id: 3,
+                type: 'info',
+                title: 'Geofence Update',
+                message: 'New geofence created around Campus Area',
+                time: '1 hour ago',
+                icon: 'fas fa-draw-polygon'
+            }
+        ];
+
+        // Toggle notification panel
+        notificationBell.addEventListener('click', function() {
+            notificationPanel.classList.toggle('active');
+            updateNotificationList();
+        });
+
+        // Close notifications
+        function closeNotifications() {
+            notificationPanel.classList.remove('active');
+        }
+
+        // Mobile menu toggle
+        mobileMenuBtn.addEventListener('click', function() {
+            navLinks.classList.toggle('active');
+        });
+
+        // Update notification list
+        function updateNotificationList() {
+            notificationList.innerHTML = '';
+            notifications.forEach(notification => {
+                const notificationItem = document.createElement('div');
+                notificationItem.className = `notification-item ${notification.type}`;
+                notificationItem.innerHTML = `
+                    <div style="display: flex; align-items: start; gap: 10px;">
+                        <div style="color: var(--${notification.type}); font-size: 1.2rem;">
+                            <i class="${notification.icon}"></i>
+                        </div>
+                        <div style="flex: 1;">
+                            <h4 style="color: var(--text); margin-bottom: 5px;">${notification.title}</h4>
+                            <p style="color: var(--text-light); font-size: 0.9rem; margin-bottom: 5px;">${notification.message}</p>
+                            <small style="color: var(--text-light);">${notification.time}</small>
+                        </div>
+                    </div>
+                `;
+                notificationList.appendChild(notificationItem);
+            });
+        }
+
+        // Demo alert function
+        function showDemoAlert() {
+            const newAlert = {
+                id: Date.now(),
+                type: 'alert',
+                title: 'Demo Alert Triggered',
+                message: 'Vehicle DEMO-001 has crossed into Central Business District',
+                time: 'Just now',
+                icon: 'fas fa-map-pin'
+            };
+            
+            notifications.unshift(newAlert);
+            notificationBadge.textContent = parseInt(notificationBadge.textContent) + 1;
+            
+            // Show notification panel
+            notificationPanel.classList.add('active');
+            updateNotificationList();
+            
+            // Close mobile menu if open
+            navLinks.classList.remove('active');
+            
+            // Add pulse animation to badge
+            notificationBadge.style.animation = 'none';
+            setTimeout(() => {
+                notificationBadge.style.animation = 'pulse 2s infinite';
+            }, 10);
+        }
+
+        // Close notification panel when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!notificationBell.contains(event.target) && !notificationPanel.contains(event.target)) {
+                notificationPanel.classList.remove('active');
+            }
+            
+            // Close mobile menu when clicking outside
+            if (!mobileMenuBtn.contains(event.target) && !navLinks.contains(event.target)) {
+                navLinks.classList.remove('active');
+            }
+        });
+
+        // Initialize
+        updateNotificationList();
+    </script>
+</body>
+</html>

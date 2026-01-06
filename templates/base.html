@@ -1,0 +1,202 @@
+<html lang="en">
+    {% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="{% static "css/home.css" %}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    {% block boot %}{% endblock boot %}
+    
+    <title>{% block title %}{% endblock title %}</title>
+
+    <style>{% block links %}{% endblock links %}</style>
+  
+</head>
+<body>
+    <header>
+    {% block header %}
+            <div class="container">
+            <div class="navbar">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <i class="fas fa-satellite-dish"></i>
+                    </div>
+                    <a href="{% url "system:home" %}" style='color:white;text-decoration:none;'><h3>VTS</h3></a>
+                </div>
+                
+                <div class="nav-links">
+                    <a href="/map" class="nav-btn nav-btn-primary">
+                        <i class="fas fa-map-marked-alt"></i>
+                        Live Map
+                    </a>
+                    <button class="nav-btn nav-btn-secondary" onclick="showDemoAlert()">
+                        <i class="fas fa-play-circle"></i>
+                        Demo Alert
+                    </button>
+                        <a href="{% url "system:logout" %}" class="nav-btn nav-btn-primary">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Logout
+                    </a>
+                    <div class="notification-bell" id="notificationBell">
+                        <i class="fas fa-bell"></i>
+                        <div class="notification-badge" id="notificationBadge">3</div>
+                    </div>
+                </div>
+
+                <button class="mobile-menu-btn" id="mobileMenuBtn">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+    {% endblock header %}
+    </header>
+    <main>
+        {% block notification %}
+            <!-- Notification Panel -->
+    <div class="notification-panel" id="notificationPanel">
+        <div class="notification-header">
+            <h3 style='color:#ffff;'><i class="fas fa-bell"></i> Notifications</h3>
+            
+        </div>
+        <div class="notification-list" id="notificationList">
+            <!-- Notifications will be dynamically added here -->
+        </div>
+              <button onclick="closeNotifications()" style="background: orange; border: none;font-size:1em;border-radius:7px; color: white; cursor: pointer; margin-left:10px; width:100%;height:50px;display:fixed;">
+                <i class="fas fa-times"></i>
+            </button>
+    </div>
+
+        {% endblock notification %}
+
+    {% block content %}{% endblock content %}
+    </main>
+
+    <footer>
+        {% block footer %}{% endblock footer %}
+    </footer>
+
+
+{% block script %}{% endblock script %}
+    
+    <script>
+        // Notification System
+        const notificationBell = document.getElementById('notificationBell');
+        const notificationPanel = document.getElementById('notificationPanel');
+        const notificationBadge = document.getElementById('notificationBadge');
+        const notificationList = document.getElementById('notificationList');
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const navLinks = document.querySelector('.nav-links');
+        
+
+        let notifications = [
+            {
+                id: 1,
+                type: 'alert',
+                title: 'Boundary Crossed',
+                message: 'Vehicle ABC-123 entered Downtown District',
+                time: '2 minutes ago',
+                icon: 'fas fa-exclamation-triangle'
+            },
+            {
+                id: 2,
+                type: 'warning',
+                title: 'Speed Alert',
+                message: 'Vehicle XYZ-789 exceeding speed limit in school zone',
+                time: '15 minutes ago',
+                icon: 'fas fa-tachometer-alt'
+            },
+            {
+                id: 3,
+                type: 'info',
+                title: 'Geofence Update',
+                message: 'New geofence created around Campus Area',
+                time: '1 hour ago',
+                icon: 'fas fa-draw-polygon'
+            }
+        ];
+
+        // Toggle notification panel
+        notificationBell.addEventListener('click', function() {
+            notificationPanel.classList.toggle('active');
+            updateNotificationList();
+        });
+
+        // Close notifications
+        function closeNotifications() {
+            notificationPanel.classList.remove('active');
+        }
+
+        // Mobile menu toggle
+        mobileMenuBtn.addEventListener('click', function() {
+            navLinks.classList.toggle('active');
+        });
+
+        // Update notification list
+        function updateNotificationList() {
+            notificationList.innerHTML = '';
+            notifications.forEach(notification => {
+                const notificationItem = document.createElement('div');
+                notificationItem.className = `notification-item ${notification.type}`;
+                notificationItem.innerHTML = `
+                    <div style="display: flex; align-items: start; gap: 10px;">
+                        <div style="color: var(--${notification.type}); font-size: 1.2rem;">
+                            <i class="${notification.icon}"></i>
+                        </div>
+                        <div style="flex: 1;">
+                            <h4 style="color: var(--text); margin-bottom: 5px;">${notification.title}</h4>
+                            <p style="color: var(--text-light); font-size: 0.9rem; margin-bottom: 5px;">${notification.message}</p>
+                            <small style="color: var(--text-light);">${notification.time}</small>
+                        </div>
+                    </div>
+                `;
+                notificationList.appendChild(notificationItem);
+            });
+        }
+
+        // Demo alert function
+        function showDemoAlert() {
+            const newAlert = {
+                id: Date.now(),
+                type: 'alert',
+                title: 'Demo Alert Triggered',
+                message: 'Vehicle DEMO-001 has crossed into Central Business District',
+                time: 'Just now',
+                icon: 'fas fa-map-pin'
+            };
+            
+            notifications.unshift(newAlert);
+            notificationBadge.textContent = parseInt(notificationBadge.textContent) + 1;
+            
+            // Show notification panel
+            notificationPanel.classList.add('active');
+            updateNotificationList();
+            
+            // Close mobile menu if open
+            navLinks.classList.remove('active');
+            
+            // Add pulse animation to badge
+            notificationBadge.style.animation = 'none';
+            setTimeout(() => {
+                notificationBadge.style.animation = 'pulse 2s infinite';
+            }, 10);
+        }
+
+        // Close notification panel when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!notificationBell.contains(event.target) && !notificationPanel.contains(event.target)) {
+                notificationPanel.classList.remove('active');
+            }
+            
+            // Close mobile menu when clicking outside
+            if (!mobileMenuBtn.contains(event.target) && !navLinks.contains(event.target)) {
+                navLinks.classList.remove('active');
+            }
+        });
+
+        // Initialize
+        updateNotificationList();
+    </script>
+
+</body>
+</html>

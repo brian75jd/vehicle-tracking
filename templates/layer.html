@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Malawi Vehicle Tracking System</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet"
+          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Smooth animated marker plugin -->
+    <script src="https://unpkg.com/leaflet.marker.slideto"></script>
+
+    <style>
+        #map { height: 100vh; width: 100%; }
+
+        .loc-btn {
+            background: white;
+            padding: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            box-shadow: 0 0 5px #333;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="map"></div>
+
+<script>
+
+    // --------------------------------------------------
+    // CUSTOM ICONS
+    // --------------------------------------------------
+    var carIcon = L.icon({
+        iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
+        shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+    });
+
+    var userIcon = L.icon({
+        iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png",
+        shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+    });
+
+    var policeIcon = L.icon({
+        iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png",
+        shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+    });
+
+
+    // --------------------------------------------------
+    // 1. Initialize Map
+    // --------------------------------------------------
+    var map = L.map("map");
+
+    map.locate({ setView: true, maxZoom: 16 });
+
+    map.on("locationfound", function (e) {
+
+        L.marker(e.latlng, { icon: userIcon })
+            .addTo(map)
+            .bindPopup("📍 You are here")
+            .openPopup();
+
+        // FIX PHONE ZOOM
+        map.setView(e.latlng, 16);
+    });
+
+
+    // --------------------------------------------------
+    // 2. Tile Layer
+    // --------------------------------------------------
+    L.tileLayer(
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        { maxZoom: 19 }
+    ).addTo(map);
+
+
+    // --------------------------------------------------
+    // 3. Layers + Variables
+    // --------------------------------------------------
+    var vehicleMarkers = {};
+    var policeLayer = L.layerGroup().addTo(map);
+    var routeLine = null;
+    var userLocationMarker = null;
+
+
+    // --------------------------------------------------
+    // 4. Fetch Police Stations
+    // --------------------------------------------------
+    async function getPoliceStations(lat, lon) {
+
+        policeLayer.clearLayers();
+
+        const query = `
+            [out:json];
+            node["amenity"="police"](around:10000, ${lat}, ${lon});
+            out;
+        `;
+
+        const url = "https://overpass-api.de/api/interpreter?data=" + encodeURIComponent(query);
+
+        try {
+            const res = await fetch(url);
+            const json = await res.json();
+
+            json.elements.forEach(st => {
+                if (st.lat && st.lon) {
+
+                    let name = st.tags?.name ?? "Police Station";
+
+                    L.marker([st.lat, st.lon], { icon: policeIcon })
+                        .addTo(policeLayer)
+                        .bindPopup(`<b>${name}</b>`);
+                }
+            });
+
+        } catch (err) {
+            console.log("Police error:", err);
+        }
+    }
+
+
+    // --------------------------------------------------
+    // 5. Route from YOU → Car
+    // --------------------------------------------------
+    function showUserLocation(carLat, carLon) {
+
+        navigator.geolocation.getCurrentPosition(pos => {
+
+            let uLat = pos.coords.latitude;
+            let uLon = pos.coords.longitude;
+
+            if (userLocationMarker)
+                map.removeLayer(userLocationMarker);
+
+            userLocationMarker = L.marker([uLat, uLon], { icon: userIcon })
+                .addTo(map)
+                .bindPopup("<b>You are here</b>");
+
+            if (routeLine)
+                map.removeLayer(routeLine);
+
+            routeLine = L.polyline(
+                [[uLat, uLon], [carLat, carLon]],
+                { color: "blue", weight: 4 }
+            ).addTo(map);
+        });
+    }
+
+
+    // --------------------------------------------------
+    // 6. Fetch Car Data (with animation)
+    // --------------------------------------------------
+    function loadVehicles() {
+
+        fetch("/api/my-vehicles/")
+            .then(res => res.json())
+            .then(vehicles => {
+
+                vehicles.forEach((v, index) => {
+
+                    let lat = v.latitude;
+                    let lon = v.longitude;
+                    let id = v.plate;
+
+                    // Create marker first time
+                    if (!vehicleMarkers[id]) {
+                        vehicleMarkers[id] = L.marker([lat, lon], { icon: carIcon }).addTo(map);
+                    }
+                    // Animate movement
+                    else {
+                        vehicleMarkers[id].slideTo([lat, lon], {
+                            duration: 1500
+                        });
+                    }
+
+                    // First car = main tracking car
+                    if (index === 0) {
+
+                        getPoliceStations(lat, lon);
+                        addLocationButton(lat, lon);
+                    }
+                });
+
+            })
+            .catch(err => console.log(err));
+    }
+
+
+    // --------------------------------------------------
+    // 7. My Location → Car button
+    // --------------------------------------------------
+    function addLocationButton(carLat, carLon) {
+
+        if (document.getElementById("myLocBtn")) return;
+
+        var button = L.control({ position: "topright" });
+
+        button.onAdd = function() {
+            var div = L.DomUtil.create("div", "loc-btn");
+            div.id = "myLocBtn";
+            div.innerHTML = "📍 My Location → Car";
+            div.onclick = () => showUserLocation(carLat, carLon);
+            return div;
+        };
+
+        button.addTo(map);
+    }
+
+
+    // --------------------------------------------------
+    // 8. Auto Refresh Every 5 Seconds
+    // --------------------------------------------------
+    loadVehicles();
+    setInterval(loadVehicles, 5000);
+
+</script>
+
+</body>
+</html>

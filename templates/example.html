@@ -1,0 +1,30 @@
+<table>
+    <tr>
+        <th>Owner</th>
+        <th>Email</th>
+        <th>Date</th>
+        <th>Vehicle Type</th>
+        <th>Plate</th>
+        <th>Status</th>
+        <th>ID</th>
+    </tr>
+
+    {% for v in vehicles %}
+    <tr>
+        <td>{{ v.owner.user.username }}</td>
+        <td>{{ v.owner.user.email }}</td>
+        <td>{{ v.owner.user.date_joined|date:'F j,Y' }}</td>
+        <td>{{ v.type }}</td>
+        <td>{{ v.plate }}</td>
+        <td>{{v.owner.userID}}</td>
+        {% if v.owner.is_active %}
+         <td>Active</td>
+         {% else %}
+         <td>Offline</td>
+        {% endif %}
+        
+    </tr>
+    {% endfor %}
+</table>
+
+{{user_count}}

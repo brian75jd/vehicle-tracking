@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Connect...</title>
+    <style>
+        body {
+            font-family:  sans-serif; /* Clashing font choice */
+            background: linear-gradient(rgba(0,0,0,0.73),rgba(0,0,0,0.73)),url("/static/images/car.png");
+            background-repeat: no-repeat;
+            background-position: center;
+            min-height:100vh;
+            background-size: contain;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+            font-family: Arial;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 6px solid #444;
+            border-top: 6px solid #f5b301;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @media (m) {
+            
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="spinner"></div>
+    <h3>Creating account, please wait...</h3>
+
+    <script>
+        setTimeout(() => {
+            window.location.href = "{% url 'system:home' %}";
+        }, 3000);
+    </script>
+
+</body>
+</html>

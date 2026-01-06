@@ -1,0 +1,23 @@
+{% extends "adminbase.html" %}
+{% load static %}
+
+{% block title %}Details{% endblock title %}
+{% block links %}{% endblock links %}
+
+{% block aside %}{% endblock aside %}
+{% block heading %}{% endblock heading %}
+{% block content %}
+
+<div class="card bg-dark text-light p-4">
+    <h4>Message from: {{ message.sender.username }}</h4>
+    <br>
+    <p><strong>Email:</strong> {{ message.email }}</p> <br>
+    
+    <p><strong>Message: </strong>{{ message.content }}</p> <br><br>
+
+    <a href="{% url 'contact:Adminmessage' %}" class="btn btn-warning mt-3">
+        Back to messages
+    </a>
+</div>
+
+{% endblock content %}

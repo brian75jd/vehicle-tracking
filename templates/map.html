@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>OpenLayers — Vehicle Tracker (Icons + Animation)</title>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@latest/ol.css" />
+<script src="https://cdn.jsdelivr.net/npm/ol@latest/dist/ol.js"></script>
+
+<style>
+  html,body{height:100%;margin:0}
+  #map{width:100%;height:100vh}
+  /* top-right dropdown to avoid overlap with OL controls */
+  .map-controls {
+    position: absolute;
+    top: 10px;
+    right: 10px;           /* moved to top-right */
+    z-index: 9999;
+    background: rgba(255,255,255,0.95);
+    padding: 8px;
+    height;300px;
+    border-radius: 6px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.25);
+    font-family: Arial, sans-serif;
+  }
+  .map-controls select, .map-controls button {
+    font-size: 14px;
+    padding: 6px;
+    margin: 4px 0;
+  }
+  .legend {
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+    z-index: 9998;
+    background: rgba(255,255,255,0.95);
+    padding: 8px;
+    border-radius: 6px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.25);
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+  }
+@media (max-width: 586px) {
+  .map-controls{
+      height:300px;
+    
+  
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="map-controls">
+  <div>
+    <label><b>Map:</b></label><br/>
+    <select id="basemapSelect">
+      <option value="street">Street</option>
+      <option value="satellite">Satellite</option>
+      <option value="terrain">Terrain</option>
+      <option value="dark">Dark</option>
+    </select>
+  </div>
+  <div>
+    <button id="locateBtn">📍 Locate me</button>
+  </div>
+</div>
+
+<div id="map"></div>
+
+<div class="legend">
+  <div><img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png" style="vertical-align:middle" /> Vehicle</div>
+  <div><img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png" style="vertical-align:middle" /> You</div>
+  <div><img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png" style="vertical-align:middle" /> Police</div>
+</div>
+
+<script>
+/* ======= Setup base layers & map ======= */
+const streetLayer = new ol.layer.Tile({ source: new ol.source.OSM(), visible: true });
+const satelliteLayer = new ol.layer.Tile({
+  source: new ol.source.XYZ({ url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}' }),
+  visible: false
+});
+const terrainLayer = new ol.layer.Tile({
+  source: new ol.source.XYZ({ url:'https://stamen-tiles.a.ssl.fastly.net/terrain/{z}/{x}/{y}.jpg' }),
+  visible: false
+});
+const darkLayer = new ol.layer.Tile({
+  source: new ol.source.XYZ({ url:'https://{a-c}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png' }),
+  visible: false
+});
+
+const view = new ol.View({
+  center: ol.proj.fromLonLat([34.0, -13.5]), // Malawi-ish center (lon,lat)
+  zoom: 7
+});
+
+const map = new ol.Map({
+  target: 'map',
+  layers: [streetLayer, satelliteLayer, terrainLayer, darkLayer],
+  view: view,
+  controls: new ol.Collection([ new ol.control.Zoom(), new ol.control.FullScreen(), new ol.control.ScaleLine() ])
+});
+
+/* ======= Dropdown handler (top-right) ======= */
+document.getElementById('basemapSelect').addEventListener('change', (e) => {
+  const v = e.target.value;
+  streetLayer.setVisible(v === 'street');
+  satelliteLayer.setVisible(v === 'satellite');
+  terrainLayer.setVisible(v === 'terrain');
+  darkLayer.setVisible(v === 'dark');
+});
+
+/* ======= Styles & Icons ======= */
+const carIconUrl = 'https://cdn.jsdelivr.net/gh/pointhi/leaflet-color-markers@master/img/marker-icon-red.png';
+const userIconUrl = 'https://cdn.jsdelivr.net/gh/pointhi/leaflet-color-markers@master/img/marker-icon-blue.png';
+const policeIconUrl = 'https://cdn.jsdelivr.net/gh/pointhi/leaflet-color-markers@master/img/marker-icon-green.png';
+
+const carStyle = (scale=1) => new ol.style.Style({
+  image: new ol.style.Icon({ src: carIconUrl, anchor: [0.5, 1], scale })
+});
+const userStyle = new ol.style.Style({
+  image: new ol.style.Icon({ src: userIconUrl, anchor: [0.5, 1], scale:1 })
+});
+const policeStyle = new ol.style.Style({
+  image: new ol.style.Icon({ src: policeIconUrl, anchor: [0.5, 1], scale:1 })
+});
+
+/* ======= Vector layers ======= */
+const vehicleSource = new ol.source.Vector();
+const vehicleLayer = new ol.layer.Vector({ source: vehicleSource, style: (f)=>f.get('style') || carStyle() });
+map.addLayer(vehicleLayer);
+
+const policeSource = new ol.source.Vector();
+const policeLayer = new ol.layer.Vector({ source: policeSource, style: policeStyle });
+map.addLayer(policeLayer);
+
+const userSource = new ol.source.Vector();
+const userLayer = new ol.layer.Vector({ source: userSource, style: userStyle });
+map.addLayer(userLayer);
+
+const routeSource = new ol.source.Vector();
+const routeLayer = new ol.layer.Vector({ source: routeSource, style: new ol.style.Style({ stroke: new ol.style.Stroke({ color:'blue', width:3 }) }) });
+map.addLayer(routeLayer);
+
+/* ======= State for vehicles (for animation) ======= */
+const vehicles = {}; // plate -> { feature, anim } 
+
+function createOrUpdateVehicle(v){
+  // expects v: { plate, latitude, longitude, type, color, VIN }
+  const id = v.plate || v.VIN || ('veh_' + Math.random().toString(36).slice(2,8));
+  const lon = parseFloat(v.longitude), lat = parseFloat(v.latitude);
+  if(Number.isNaN(lat) || Number.isNaN(lon)) return;
+  const coord = ol.proj.fromLonLat([lon, lat]);
+
+  if(!vehicles[id]){
+    const feat = new ol.Feature({ geometry: new ol.geom.Point(coord), id, data: v });
+    feat.setStyle(carStyle(1));
+    vehicleSource.addFeature(feat);
+    vehicles[id] = { feat, anim: null, lastCoord: coord.slice() };
+    // optional: attach popup on click handled later
+  } else {
+    // animate from lastCoord -> coord
+    const entry = vehicles[id];
+    const geom = entry.feat.getGeometry();
+    const start = geom.getCoordinates(); // array [x,y]
+    const end = coord;
+    const duration = 1200; // ms
+    const t0 = Date.now();
+
+    // cancel existing animation by overriding
+    entry.anim = function step(){
+      const t = Math.min(1, (Date.now() - t0) / duration);
+      const x = start[0] + (end[0] - start[0]) * t;
+      const y = start[1] + (end[1] - start[1]) * t;
+      geom.setCoordinates([x,y]);
+      if(t < 1) requestAnimationFrame(step);
+      else { entry.lastCoord = end.slice(); entry.anim = null; }
+    };
+    requestAnimationFrame(entry.anim);
+
+    // update stored data
+    entry.feat.set('data', v);
+  }
+}
+
+/* ======= Fetch vehicles from backend and refresh ======= */
+async function loadVehiclesAndUpdate(){
+  try{
+    const resp = await fetch('/api/my-vehicles/');
+    if(!resp.ok){ console.warn('Vehicle API status', resp.status); return; }
+    const list = await resp.json();
+    if(!Array.isArray(list)) { console.warn('Vehicle API must return array'); return; }
+
+    // create/update features
+    list.forEach((v, idx) => {
+      createOrUpdateVehicle(v);
+      if(idx === 0){
+        // fetch police & optionally set main vehicle context
+        const mlon = parseFloat(v.longitude), mlat = parseFloat(v.latitude);
+        if(!Number.isNaN(mlon) && !Number.isNaN(mlat)) {
+          fetchPoliceStations(mlat, mlon); // lat, lon (Overpass expects lat,lon)
+          // optionally center on first vehicle (commented out so we don't jump)
+          // view.animate({ center: ol.proj.fromLonLat([mlon, mlat]), zoom: 15, duration: 800 });
+        }
+      }
+    });
+
+  } catch(err){
+    console.warn('Vehicle fetch error', err);
+  }
+}
+
+/* ======= Police stations via Overpass (10km) with names ======= */
+async function fetchPoliceStations(lat, lon){
+  policeSource.clear();
+  const query = `[out:json];node["amenity"="police"](around:10000,${lat},${lon});out;`;
+  const url = 'https://overpass-api.de/api/interpreter?data=' + encodeURIComponent(query);
+  try{
+    const r = await fetch(url);
+    const j = await r.json();
+    if(!j.elements || j.elements.length === 0)
+    { 
+      setInterval(()=>{alert('No Police station found...');},45000);
+      /*return;*/
+     }
+
+    j.elements.forEach(el => {
+      if(el.lat && el.lon){
+        const f = new ol.Feature({ geometry: new ol.geom.Point(ol.proj.fromLonLat([el.lon, el.lat])), name: (el.tags && el.tags.name) || 'Police Station' });
+        f.setStyle(policeStyle);
+        policeSource.addFeature(f);
+      }
+    });
+  }catch(e){ console.warn('Overpass error', e); }
+}
+
+/* ======= Popup overlay ======= */
+const popupEl = document.createElement('div');
+popupEl.style.background = 'white';
+popupEl.style.padding = '6px';
+popupEl.style.borderRadius = '4px';
+popupEl.style.boxShadow = '0 1px 4px rgba(0,0,0,0.3)';
+popupEl.style.minWidth = '140px';
+const overlay = new ol.Overlay({ element: popupEl, autoPan:true, autoPanAnimation:{duration:250} });
+map.addOverlay(overlay);
+
+map.on('singleclick', function(evt){
+  overlay.setPosition(undefined);
+  map.forEachFeatureAtPixel(evt.pixel, function(feat, layer){
+    if(!feat) return;
+    // vehicle
+    if(vehicleSource.hasFeature(feat)){
+      const d = feat.get('data') || {};
+      const coords = feat.getGeometry().getCoordinates();
+      popupEl.innerHTML = `<b>${d.plate || d.VIN || 'Vehicle'}</b><br>Type: ${d.type || '-'}<br>Lat:${(d.latitude||'').toString()}<br>Lon:${(d.longitude||'').toString()}<br><button id="routeBtn">Route to this</button>`;
+      overlay.setPosition(coords);
+      // hook route button
+      setTimeout(()=>{ const btn = document.getElementById('routeBtn'); if(btn){ btn.onclick = ()=> { routeToFeature(feat); } } },10);
+      return true;
+    }
+    // police
+    if(policeSource.hasFeature(feat)){
+      const name = feat.get('name') || 'Police Station';
+      overlay.setPosition(feat.getGeometry().getCoordinates());
+      popupEl.innerHTML = `<b>${name}</b>`;
+      return true;
+    }
+    // user
+    if(userSource.hasFeature(feat)){
+      overlay.setPosition(feat.getGeometry().getCoordinates());
+      popupEl.innerHTML = `<b>Your location</b>`;
+      return true;
+    }
+  });
+});
+
+/* ======= Route drawer: user -> vehicle ======= */
+function routeToFeature(feat){
+  // need user location
+  const userFeats = userSource.getFeatures();
+  if(userFeats.length === 0) { alert('Please click "Locate me" first to set your location.'); return; }
+  const userCoord = userFeats[0].getGeometry().getCoordinates();
+  const vehCoord = feat.getGeometry().getCoordinates();
+  routeSource.clear();
+  const line = new ol.Feature(new ol.geom.LineString([userCoord, vehCoord]));
+  routeSource.addFeature(line);
+  // zoom to fit
+  const ext = line.getGeometry().getExtent();
+  view.fit(ext, { padding:[60,60,60,60], maxZoom:16, duration:800 });
+}
+
+/* ======= Locate me button behavior ======= */
+document.getElementById('locateBtn').addEventListener('click', ()=> locateAndMarkUser(true));
+function locateAndMarkUser(centerto=false){
+  if(!navigator.geolocation){ alert('Geolocation not supported'); return; }
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const lon = pos.coords.longitude, lat = pos.coords.latitude;
+    userSource.clear();
+    const f = new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat([lon, lat])));
+    f.setStyle(userStyle);
+    userSource.addFeature(f);
+    if(centerto) view.animate({ center: ol.proj.fromLonLat([lon, lat]), zoom: 15, duration: 600 });
+  }, err => { alert('Error getting location: ' + err.message); });
+}
+
+/* ======= Initial load + interval ======= */
+loadVehiclesAndUpdate();
+setInterval(loadVehiclesAndUpdate, 5000);
+
+/* ======= Small note about authentication ======= */
+/*
+ If /api/my-vehicles/ requires login (cookies), this HTML must be served
+ from the same domain and the user should be logged in; otherwise create
+ a demo public endpoint for testing. If you use token auth, include Authorization header in fetch().
+*/
+
+/* ======= Console ready ======= */
+console.log('OpenLayers vehicle tracker (icons) loaded.');
+
+</script>
+</body>
+</html>

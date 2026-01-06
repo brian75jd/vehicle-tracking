@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicle Tracking system</title>
+    <style>
+        /* Incompatible color scheme - clashing with SecureBank's design */
+        :root {
+            --primary: #2c0685; /* Bright pink - clashes with banking aesthetic */
+            --secondary: #FFD740; /* Bright yellow */
+            --background: orange; /* orange background */
+            --text: #bbb4b4ff;
+            --error: #FF5722; /* Bright orange for errors */
+             --gradient: linear-gradient(135deg, #191c1fff, #13171bff);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(rgba(0, 0, 0, 0.73),rgba(0,0,0,0.73)),url("/static/images/car.png");
+            background-repeat: no-repeat;
+            background-position: center;
+            min-height:100vh;
+            background-size: contain;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: white;
+        }
+
+        .login-container {
+            background-color: transparent;
+            padding: 30px;
+            border-radius: 20px;
+            width: 350px;
+            text-align: center;
+        }
+
+        .logo {
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .form-group {
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #ffff;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--text);
+            border-radius: 10px;
+            box-sizing: border-box;
+            font-size: 18px;
+            background-color: transparent;
+            color: var(--text);
+        }
+
+        input:focus {
+            outline: none;
+            /* border-color:var(--primary);  Different shade of pink */
+            box-shadow: 0 0 5px rgba(223, 216, 218, 0.5);
+        }
+
+        .login-btn {
+            background-color: var(--background);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+
+        .login-btn:hover {
+            background-color: var(--background); /* Different shade on hover */
+            transform: translateY(-4%)
+        }
+
+        .forgot-password {
+            margin-top: 15px;
+            color: var(--text);
+            text-decoration: none;
+            font-size: 16px;
+        }
+
+        .forgot-password:hover {
+            text-decoration: underline;
+        }
+
+        /* Popup message styling */
+        .popup {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--error);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            font-weight: bold;
+            max-width: 80%;
+        }
+
+        .popup.show {
+            display: block;
+            animation: fadeInOut 4s forwards;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; top: 0; }
+            10% { opacity: 1; top: 20px; }
+            90% { opacity: 1; top: 20px; }
+            100% { opacity: 0; top: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">VTS</div>
+        <form class="login-form" method="post" action="{% url 'system:login' %}">
+            {% csrf_token %}
+            {% if messages %}
+            {% for messages in messages %}
+            {{messages}}
+            {% endfor %}
+            {% endif %}
+            <div class="form-group">
+                <label for="username">Username</label>
+                {{form.username}}
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                {{form.password}}
+            </div>
+
+            <button type="submit" class="login-btn">Login</button>
+
+            <a href="{% url "system:signup" %}" class="forgot-password">Register</a>
+        </form>
+    </div>
+
+
+    <!-- Popup for error messages -->
+    <div id="errorPopup" class="popup">
+        {% if messages %}
+        {% for message in messages %}
+        {{message}}
+        {% endfor %}
+        {% endif %}
+    </div>
+
+    <script>
+        // Function to show error popup
+        function showError(message) {
+            const popup = document.getElementById('errorPopup');
+            popup.textContent = message;
+            popup.classList.add('show');
+
+            setTimeout(() => {
+                popup.classList.remove('show');
+            }, 4000);
+        }
+
+        // Check if there are Django form errors
+        {% if form.errors %}
+            showError("Invalid username or password. Please try again.");
+        {% endif %}
+
+        // Additional client-side validation
+        document.querySelector('.login-form').addEventListener('submit', function(e) {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (!username || !password) {
+                e.preventDefault();
+                showError("Please fill in all fields.");
+            }
+        });
+    </script>
+</body>
+</html>

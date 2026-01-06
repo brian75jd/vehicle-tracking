@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Creating Account</title>
+    <style>
+        body {
+            font-family:  sans-serif; /* Clashing font choice */
+            background: linear-gradient(rgba(0,0,0,0.73),rgba(0,0,0,0.73)),url("/static/images/car.png");
+            background-repeat: no-repeat;
+            background-position: center;
+            min-height:100vh;
+            background-size: contain;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            font-family: Arial;
+        }
+
+        .spinner {
+            width: 150px;
+            height: 150px;
+            border: 6px solid #444;
+            border-top: 8px solid #f5b301;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        h3{
+            font-size:25px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+         @media (max-width: 768px) {
+            .spinner{
+                height:220px;
+                width: 220px;
+            }
+            h3{
+                font-size:17px;
+            }
+         }
+    </style>
+</head>
+
+<body>
+
+    <div class="spinner"></div>
+    <h2>Getting things ready, please wait...</h2>
+
+    <script>
+        setTimeout(() => {
+            window.location.href = "{% url 'system:home' %}";
+        }, 5000);
+    </script>
+
+</body>
+</html>

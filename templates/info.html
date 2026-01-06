@@ -1,0 +1,469 @@
+{% extends "base.html" %}
+{% load static %}
+{% block boot %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+{% endblock boot %}
+
+{% block links %}
+
+       * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(rgba(0,0,0,0.73),rgba(0,0,0,0.73)),url("/static/images/car.png");
+            background-repeat: no-repeat;
+            background-position: center;
+            min-height:100vh;
+            background-size: contain;
+            background-attachment:fixed;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .update{
+            background-color:white;
+            width:50%;
+            height:350px;
+            align-items:center;
+            justify-content:center;
+            border:none;
+            border-radius:7px;
+            display: grid;
+            gap: 15px;
+             display:none;
+            margin-bottom:30px;
+
+        }
+        .update form{
+            display:absolute;
+        }
+        .update input{
+            height:35px;
+            outline:none;
+            width:300px;
+            padding:10px;
+            margin-top:15px;
+            border-radius:7px;
+
+        }
+        .update h3{
+            margin-top:10px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+        .btn{
+            margin-top:10px;
+            height:35px;
+            width:120px;
+            background-color: #bb6706ff;
+            color:white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: transparent;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 15px;
+        }
+
+        .card-header i {
+            font-size: 1.5rem;
+            color: #667eea;
+            margin-right: 10px;
+        }
+
+        .card-header h2 {
+            color: #f3ededff;
+            font-size: 1.4rem;
+        }
+
+        .info-grid {
+            display: grid;
+            gap: 15px;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #e2dedeff;
+        }
+
+        .info-value {
+            color: #e4ddddff;
+            font-weight: 500;
+        }
+
+        .status-online {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .status-offline {
+            color: #f44336;
+            font-weight: bold;
+        }
+
+        .location-card {
+            grid-column: span 2;
+        }
+
+        .map-container {
+            height: 300px;
+            background: linear-gradient(45deg, #e3f2fd, #bbdefb);
+            border-radius: 10px;
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 1.1rem;
+            border: 2px dashed #90caf9;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: #3b3d3dff;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            border:1px solid   #b1b9b9ff;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #f0ebebff;
+        }
+
+        .stat-label {
+            color: #f8f2f2ff;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+        .feedback{
+            height:45px;
+            width:50%;
+            padding:7px;
+            background-color:orange;
+            align-items:center;
+            text-align:center;
+            border-radius:7px;
+        }
+        .feedback a{
+            text-decoration:none;
+            color:white;
+
+        }
+
+        @media (max-width: 768px) {
+            .location-card {
+                grid-column: span 1;
+            }
+
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            .update{
+                margin-left:10px;
+                width:380px;
+            }
+        }
+
+        /* Loading animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Last update time */
+        .last-update {
+            text-align: center;
+            color: white;
+            margin-top: 20px;
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+
+{% endblock links %}
+
+{% block title %}Info{% endblock title %}
+
+{% block nav %}{% endblock nav %}
+
+{% block content %}
+
+    <div class="container">
+        <div class="header">
+            <h1>🚗 </h1>
+            <p></p>
+        </div>
+
+        <div class="update" id="update">
+            <form method='POST'>
+            {% csrf_token %}
+            {% if messages %}
+            {% for message in messages %}
+            {{message}}
+            {% endfor %}
+            {% endif %}
+          <div class="mb-2">
+           {{form.phone}}
+          </div>
+          <div class="mb-3">
+          {{form.userID}}
+         </div>
+
+            <button type="submit" class="btn btn-primary">Submit</button>
+          </form>
+
+        </div>
+
+        <div class="dashboard">
+            <!-- User Information Card -->
+            <div class="card">
+                <div class="card-header">
+                    <i>👤</i>
+                    <h2 style=''>User Information</h2>
+                </div>
+
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Full Name:</span>
+                        <span class="info-value">{{request.user|title}}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">User ID:</span>
+                        <span class="info-value">{{profile.userID}}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Phone:</span>
+                        <span class="info-value">{{profile.phone}}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Email:</span>
+                        <span class="info-value">{{request.user.email}}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Status:</span>
+                        <span class="info-value status-online">● Active</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vehicle Information Card -->
+            {% for veh in vehicle  %}
+            <div class="card">
+                <div class="card-header">
+                    <i>🚙</i>
+                    <h2>Vehicle Information</h2>
+                </div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Car Type:</span>
+                        <span class="info-value">{{veh.type}}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">License Plate:</span>
+                        <span class="info-value">{{veh.plate}}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">VIN:</span>
+                        <span class="info-value">{{veh.VIN}}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Color:</span>
+                        <span class="info-value">{{veh.color}}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Date Registered:</span>
+                        <span class="info-value">{{request.user.date_joined|date:'F, d,Y'}}</span>
+                    </div>
+                </div>
+
+            </div>
+
+
+            <!-- Current Location Card -->
+            <div class="card location-card">
+                <div class="card-header">
+                    <i>📍</i>
+                    <h2>Current Location & Tracking</h2>
+                </div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Current Address:</span>
+                        <span class="info-value">123 Main Street, Downtown, City</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Coordinates:</span>
+                        <span class="info-value">{{veh.latitude}}° N, {{veh.longitude}}° W</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Last Update:</span>
+                        <span class="info-value">
+                            <span id="currentTime">Updating...</span>
+                            <div class="loading" style="display: inline-block; margin-left: 10px;"></div>
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">GPS Status:</span>
+                        <span class="info-value status-online">● Connected</span>
+                    </div>
+                </div>
+                <div class="map-container">
+                    🗺️ Live Map View - Vehicle Location Tracking
+                </div>
+            </div>
+            {% endfor %}
+
+            <!-- Additional Statistics -->
+            <div class="card">
+                <div class="card-header">
+                    <i>📊</i>
+                    <h2>Tracking Statistics</h2>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value">245</div>
+                        <div class="stat-label">KM Traveled</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">18</div>
+                        <div class="stat-label">Trips This Month</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">45</div>
+                        <div class="stat-label">Avg Speed (km/h)</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">98%</div>
+                        <div class="stat-label">System Uptime</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Device Status -->
+            <div class="card">
+                <div class="card-header">
+                    <i>⚙️</i>
+                    <h2>Device Status</h2>
+                </div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">ESP32 Status:</span>
+                        <span class="info-value status-online">● Online</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">SIM808 Module:</span>
+                        <span class="info-value status-online">● Connected</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Battery Level:</span>
+                        <span class="info-value">87%</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Network Signal:</span>
+                        <span class="info-value">Excellent (4/4)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="feedback">
+            <a href="{% url "contact:feedback" %}">
+                <p>Contact us</p>
+            </a>
+        </div>
+
+        <div class="last-update">
+            <p>VTS - Vehicle Tracking System | Secure Monitoring Platform</p>
+        </div>
+    </div>
+
+{% endblock content %}
+
+{% block script %}
+<script>
+    const btn = document.getElementById("btn");
+    const update = document.getElementById('update');
+    btn.addEventListener('click', function()
+    {
+        update.style.display='block';
+
+    });
+</script>
+{% endblock script %}
+
+

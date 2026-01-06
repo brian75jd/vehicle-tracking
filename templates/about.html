@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block boot %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+{% endblock boot %}
+
+    {% block links %}
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(rgba(0,0,0,0.86),rgba(0,0,0,0.86)),url("/static/images/car.png");
+        background-repeat: no-repeat;
+        background-position: center;
+         min-height:100vh;
+        background-size: contain;
+        background-attachment:fixed;
+        margin: 0;
+        padding: 0;
+}
+
+.container1 {
+    margin:auto;
+    max-width: 900px;
+    margin-top:65px;
+    padding: 30px;
+    background: transparent;
+}
+.boot{
+    position:fixed;
+    transition:0.5s;
+    margin-top:30px;
+    align-items:center;
+    text-align:center;
+}
+
+h1 {
+    text-align: center;
+    color:white;
+}
+
+.subtitle {
+    text-align: center;
+    color:white;
+    margin-bottom: 30px;
+}
+
+.section {
+    margin-bottom: 30px;
+}
+
+.section h2 {
+    color: white;
+}
+
+.section p, li {
+    color: white;
+    line-height: 1.6;
+}
+
+ul {
+    padding-left: 20px;
+}
+
+textarea {
+    width: 100%;
+    height: 120px;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius:7px;
+    background-color:transparent;
+    color:white;
+    font-size:16px;
+}
+textarea::placeholder{
+    color:white;
+    font-size:16px;
+}
+
+button {
+    margin-top: 10px;
+    padding: 10px 20px;
+    background: orange;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius:7px;
+}
+
+button:hover {
+    background: transparent;
+}
+
+.email-btn {
+    display: inline-block;
+    padding: 12px 20px;
+    background:orange;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+.email-btn:hover {
+    background: #fd810cff;
+}
+{% endblock links %}
+
+{% block title %}Contact{% endblock title %}
+{% block nav %}{% endblock nav %}
+{% block content %}
+
+<div class="container1">
+    <div class="boot">
+        {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <strong>Alert! </strong>{{message}}.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+    </div>
+    <h1>Vehicle Tracking System</h1>
+    <p class="subtitle">
+
+    </p>
+
+    <section class="section">
+
+        <h2>About the Project</h2>
+        <p>
+            This Vehicle Tracking System is an academic and practical project
+            designed to help vehicle owners monitor the real-time location of
+            their vehicles using GPS technology and a web-based map interface.
+        </p>
+        <br>
+
+        <p>
+            The system allows users to register vehicles, track live coordinates,
+            view nearby police stations, and monitor vehicle movement remotely.
+        </p>
+        <br>
+        <p>
+            If the user encounters any error or any bug or any security threat,
+            do not hesitate to contact our Team.
+        </p>
+    </section>
+
+    <section class="section">
+        <h2>Why This Project?</h2>
+        <p>
+            Vehicle theft and poor vehicle monitoring are major challenges.
+            This project was developed to demonstrate how modern web technologies,
+            IoT devices (ESP32), and mapping APIs can be combined to solve
+            real-world problems.
+        </p>
+    </section>
+
+    <section class="section">
+        <h2>Developer</h2>
+        <p>
+            <strong>Name:</strong> Brian Bingala <br>
+            <strong>Program:</strong> Bachelor of Science in Physics and Electronics <br>
+            <strong>Institution:</strong> Mzuzu University
+        </p>
+    </section>
+
+    <section class="section">
+        <h2>Key Features</h2>
+        <ul>
+            <li>Live vehicle tracking on map</li>
+            <li>Multiple vehicles per user</li>
+            <li>Nearby police station detection</li>
+            <li>Secure authentication system</li>
+            <li>ESP32 GPS data integration</li>
+        </ul>
+    </section>
+
+    <section class="section">
+        <h2>Complaints & Feedback</h2>
+
+        <form method="POST">
+            {% csrf_token %}
+            {{form.content}}
+            <button type="submit">Submit Feedback</button>
+        </form>
+    </section>
+
+    <section class="section contact">
+        <a href="mailto:brian75jd@gmail.com" class="email-btn">
+            Email the Developer
+        </a>
+    </section>
+
+</div>
+
+{% endblock content %}
